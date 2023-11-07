@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  # Dev
+  phpstan:
+    cmds:
+      - php vendor/bin/phpstan analyze
+
+  phpcsfixer:
+    cmds:
+      - php vendor/bin/php-cs-fixer fix
+
+  # Deploy
+  install:
+    cmds:
+      - php bin/console app:populate-bikes
