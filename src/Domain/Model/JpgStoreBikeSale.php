@@ -2,29 +2,40 @@
 
 namespace App\Domain\Model;
 
-final class Bike
+final class JpgStoreBikeSale
 {
-    private ?float $rarity;
-
     public function __construct(
         private string $id,
+        private string $cardanoTokenAddress,
         private int $lovelacePrice,
     ) {
     }
 
-    public function getId()
+    public function getId(): string
     {
-        return$this->id;
+        return $this->id;
     }
 
-    public function getRarity(): ?float
+    public function getCardanoTokenAddress(): string
     {
-        return $this->rarity;
+        return $this->cardanoTokenAddress;
     }
 
-    public function setRarity(?float $rarity): Bike
+    public function setCardanoTokenAddress(string $cardanoTokenAddress): JpgStoreBikeSale
     {
-        $this->rarity = $rarity;
+        $this->cardanoTokenAddress = $cardanoTokenAddress;
+
+        return $this;
+    }
+
+    public function getLovelacePrice(): int
+    {
+        return $this->lovelacePrice;
+    }
+
+    public function setLovelacePrice(int $lovelacePrice): JpgStoreBikeSale
+    {
+        $this->lovelacePrice = $lovelacePrice;
 
         return $this;
     }

@@ -3,12 +3,12 @@
 namespace App\Command;
 
 use App\Client\JpgStoreClient;
-use App\Client\W3RideClient;
+use App\Entity\BikeSale;
+use App\Repository\BikeRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -20,9 +20,9 @@ class PopulateSalesCommand extends Command
 {
     public function __construct(
         private JpgStoreClient $jpgStoreClient,
-        private W3RideClient $w3RideClient,
-    )
-    {
+        private BikeRepository $bikeRepository,
+        private EntityManagerInterface $entityManager,
+    ) {
         parent::__construct();
     }
 
@@ -34,10 +34,28 @@ class PopulateSalesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $this->entityManager
+            ->getConnection()
+            ->executeStatement('DELETE FROM bike_sale');
+
         $sales = $this->jpgStoreClient->getSales();
 
         foreach ($sales as $sale) {
-            // TODO
+            $bike = $this->bikeRepository->findOneBy(
+                ['assetNumber' => $sale->getId()],
+            );
+            if (null === $bike) {
+                // TODO: throw exception
+                continue;
+            }
+
+            $bikeSale = new BikeSale();
+            $bikeSale
+                ->setBike($bike)
+                ->setLovelacePrice($sale->getLovelacePrice());
+
+            $this->entityManager->persist($bikeSale);
+            $this->entityManager->flush();
         }
 
         return Command::SUCCESS;
