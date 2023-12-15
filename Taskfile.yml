@@ -13,4 +13,6 @@ tasks:
   # Deploy
   install:
     cmds:
-      - php bin/console app:populate-bikes
+      - php bin/console doctrine:migr:migr
+      - php bin/console app:populate-sales
+
