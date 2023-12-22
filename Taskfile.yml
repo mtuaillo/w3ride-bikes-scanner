@@ -1,7 +1,6 @@
 version: '3'
 
 tasks:
-  # Dev
   phpstan:
     cmds:
       - php vendor/bin/phpstan analyze
@@ -10,9 +9,11 @@ tasks:
     cmds:
       - php vendor/bin/php-cs-fixer fix
 
-  # Deploy
   install:
     cmds:
+      - composer install
       - php bin/console doctrine:migr:migr
-      - php bin/console app:populate-sales
 
+  list-sales:
+      - php bin/console app:populate-sales
+      - php bin/console app:list-sales

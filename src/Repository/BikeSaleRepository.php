@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\BikeSale;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -21,28 +22,32 @@ class BikeSaleRepository extends ServiceEntityRepository
         parent::__construct($registry, BikeSale::class);
     }
 
-    //    /**
-    //     * @return BikeSale[] Returns an array of BikeSale objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getBestDealsByScore(): array
+    {
+        $rsm = new ResultSetMapping();
+        $rsm
+            ->addScalarResult('score', 'score')
+            ->addScalarResult('asset_number', 'asset_number')
+            ->addScalarResult('ada_price', 'ada_price')
+        ;
 
-    //    public function findOneBySomeField($value): ?BikeSale
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $query = $this->getEntityManager()->createNativeQuery('
+            WITH lower_price_by_score AS (
+                SELECT
+                    b.score,
+                    b.asset_number,
+                    bs.lovelace_price,
+                    RANK() OVER (PARTITION BY b.score ORDER BY bs.lovelace_price ASC) AS score_rank
+                FROM bike_sale bs
+                INNER JOIN bike b on b.id = bs.bike_id
+                WHERE bs.lovelace_price > 0
+            )
+            
+            SELECT score, asset_number, (lovelace_price / 1000000) AS ada_price
+            FROM lower_price_by_score
+            WHERE score_rank = 1
+        ', $rsm);
+
+        return $query->getResult();
+    }
 }
