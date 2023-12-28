@@ -30,9 +30,11 @@ class PopulateBikesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /* @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('Continue ? ', false);
+        if (!$helper instanceof QuestionHelper) {
+            return Command::FAILURE;
+        }
+        $question = new ConfirmationQuestion('This will empty bikes table. Continue ? ', false);
 
         if (!$helper->ask($input, $output, $question)) {
             return Command::SUCCESS;

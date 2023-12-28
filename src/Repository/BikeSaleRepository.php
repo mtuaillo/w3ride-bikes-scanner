@@ -22,6 +22,9 @@ class BikeSaleRepository extends ServiceEntityRepository
         parent::__construct($registry, BikeSale::class);
     }
 
+    /**
+     * @return array{'score': float, 'asset_number': string, 'ada_price': float }[]
+     */
     public function getBestDealsByScore(): array
     {
         $rsm = new ResultSetMapping();
