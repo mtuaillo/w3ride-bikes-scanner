@@ -22,3 +22,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Client\JpgStoreClient:
+        arguments:
+            $searchUrl : '%env(JPG_STORE_SEARCH_URL)%'
+
+    App\Client\W3RideClient:
+        arguments:
+            $scoreUrl : '%env(W3_RIDE_SCORE_URL)%'

@@ -7,16 +7,15 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class W3RideClient
 {
-    private const URL = 'https://w3ride.io/api/score-checker/check';
-
     public function __construct(
         private HttpClientInterface $client,
+        private string $scoreUrl,
     ) {
     }
 
     public function getBike(int $id): W3RideBike
     {
-        $response = $this->client->request('POST', self::URL, [
+        $response = $this->client->request('POST', $this->scoreUrl, [
             'body' => [
                 'bikeNumber' => $id,
             ],

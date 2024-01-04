@@ -7,11 +7,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class JpgStoreClient
 {
-    // TODO: divide in url + default options array
-    private const URL = 'https://server.jpgstoreapis.com/search/tokens';
-        //'https://server.jpgstoreapis.com/search/tokens?;
-
-    // TODO: use OptionsResolver
     private const DEFAULT_PARAMS = [
         'policyIds' => '902eaf4440531a68e8a00345f3c7455ad2c8c8f3bbd59355fa14b9aa',
         'saleType' => 'buy-now',
@@ -26,6 +21,7 @@ class JpgStoreClient
 
     public function __construct(
         private HttpClientInterface $client,
+        private string $searchUrl,
     ) {
     }
 
@@ -41,7 +37,7 @@ class JpgStoreClient
             if (null !== $pagination) {
                 $params['pagination'] = $pagination;
             }
-            $url = self::URL.'?'.http_build_query($params);
+            $url = $this->searchUrl.'?'.http_build_query($params);
 
             $response = $this->client->request('GET', $url, [
                 'headers' => [
