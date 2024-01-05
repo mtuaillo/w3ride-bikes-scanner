@@ -20,4 +20,11 @@ class BikeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Bike::class);
     }
+
+    public function truncateTable(): void
+    {
+        $this->getEntityManager()
+            ->getConnection()
+            ->executeStatement('DELETE FROM bike');
+    }
 }

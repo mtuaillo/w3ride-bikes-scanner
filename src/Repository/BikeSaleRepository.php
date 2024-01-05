@@ -53,4 +53,11 @@ class BikeSaleRepository extends ServiceEntityRepository
 
         return $query->getResult();
     }
+
+    public function truncateTable(): void
+    {
+        $this->getEntityManager()
+            ->getConnection()
+            ->executeStatement('DELETE FROM bike_sale');
+    }
 }

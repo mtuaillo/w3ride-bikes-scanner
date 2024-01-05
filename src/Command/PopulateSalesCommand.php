@@ -2,26 +2,23 @@
 
 namespace App\Command;
 
-use App\Client\JpgStoreClient;
-use App\Entity\BikeSale;
-use App\Repository\BikeRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Creator\BikeSaleCreator;
+use App\Repository\BikeSaleRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:populate-sales',
-    description: 'Add a short description for your command',
+    description: 'Populate bike sales table',
 )]
 class PopulateSalesCommand extends Command
 {
     public function __construct(
-        private JpgStoreClient $jpgStoreClient,
-        private BikeRepository $bikeRepository,
-        private EntityManagerInterface $entityManager,
+        private BikeSaleRepository $bikeSaleRepository,
+        private BikeSaleCreator $bikeSaleCreator,
     ) {
         parent::__construct();
     }
@@ -32,31 +29,16 @@ class PopulateSalesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $this->bikeSaleRepository->truncateTable();
 
-        $this->entityManager
-            ->getConnection()
-            ->executeStatement('DELETE FROM bike_sale');
+        $progressBar = new ProgressBar($output);
+        $progressBar->start();
 
-        $sales = $this->jpgStoreClient->getSales();
-
-        foreach ($sales as $sale) {
-            $bike = $this->bikeRepository->findOneBy(
-                ['assetNumber' => $sale->getId()],
-            );
-            if (null === $bike) {
-                // TODO: throw exception
-                continue;
-            }
-
-            $bikeSale = new BikeSale();
-            $bikeSale
-                ->setBike($bike)
-                ->setLovelacePrice($sale->getLovelacePrice());
-
-            $this->entityManager->persist($bikeSale);
-            $this->entityManager->flush();
+        foreach ($this->bikeSaleCreator->createBikeSales() as $bikeSale) {
+            $progressBar->advance();
         }
+
+        $progressBar->finish();
 
         return Command::SUCCESS;
     }
